@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+<title>dropzone</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+</head>
+<body >
+
+  <form id = "dropzone" method="post" oninput = "validate(this)" enctype="multipart/form-data">
+  <input id = "inputField" type="file" name="file" multiple/>
+</form>
+<div id ="fileContents"></div>
+      <script src="assets/jquery.min.js"></script>
+      <script src="assets/jszip.min.js"></script>
+      <script src="assets/FileSaver.min.js"></script>
+
+
+<script>
+    var reader = new FileReader();  
+    var filesToExport = []; 
+    var assignmentOnPageTracker = [];
+
+function validate(oForm) {
+    var arrInputs = oForm.getElementsByTagName("input");
+    var fileListToProceed = [];
+    for (var i = 0; i < arrInputs.file.files.length; i++)
+    {
+        var filename = arrInputs.file.files[i].name;
+        if(filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2) == "html")
+        {
+            if((filename.match(/-/g) || []).length >= 6)
+            {
+                var stringParts = filename.split("-");
+                 stringParts[6] = stringParts[6].replace(".html", ""); 
+                if(!isNaN(stringParts[6]) && stringParts[6] != "1")
+                {
+                    fileListToProceed.push(arrInputs.file.files[i]);    
+                }
+                
+            }
+        }
+    }
+    if(fileListToProceed.length > 0)
+    {
+        replace(fileListToProceed);
+    }
+}
+
+function replace(arr)
+{
+
+const files = arr;
+//console.log(files);
+    var count = 0;
+    var fileValue;
+    var assignmentCount = 1;
+  Object.keys(files).forEach(i => {
+    const file = files[i];
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+     fileValue = evt.target.result;
+                var page = document.createElement('html');
+                var imgpath = getImgPath(file.name);
+                page.innerHTML = fileValue;
+               // console.log(page.children[1].innerHTML);
+                page.children[0].innerHTML += "<style> p{font-family: 'Arial'!important;} body{background:'white';background-image: url("+ imgpath +");background-position: -75px -50px !important;background-repeat: no-repeat !important;}</style>";
+                page.children[1].removeAttribute("bgcolor");
+                page.children[1].setAttribute("style", "margin:-75px!important; margin-top:-50px!important;");
+                page.children[1].children[0].setAttribute("style", "position:relative;width:892px;height:auto;");
+                page.children[1].children[0].children[0].remove();
+
+                 for (var i = 0; i < page.children[1].children[0].children.length; i++)
+                 {
+                            if(page.children[1].children[0].children[i].innerHTML.match("►►►"))
+                            {
+                                 for (var x = i - 4; x <= i; x++)
+                                    {
+                                        if(page.children[1].children[0].children[x].innerHTML.match("►►►"))
+                                        {
+                                             page.children[1].children[0].children[x].remove();
+                                             break;
+                                        }
+                                        page.children[1].children[0].children[x].remove();
+                                        x--;
+                                    }
+                                 break;
+                            }
+                 }
+                        try {
+                            if(page.children[1].children[0].lastElementChild.textContent.includes("Let op:"))
+                           {        
+                               page.children[1].children[0].lastElementChild.remove();
+                           }  
+                            if(page.children[1].children[0].lastElementChild.textContent.includes("Bronvermelding"))
+                           {
+                               page.children[1].children[0].lastElementChild.remove();
+                               page.children[1].children[0].lastElementChild.remove();
+                               page.children[1].children[0].lastElementChild.remove();
+                               page.children[1].children[0].lastElementChild.remove();
+                            }
+                        }
+                        catch(err) {
+                            //console.log(err.message);
+                            //console.log(page.children[1].children[0]);
+ 
+                        }
+                 var oldDetectedAssignment = "";          
+                 for (var i = 0; i < page.children[1].children[0].children.length; i++)
+                 {
+                        if( page.children[1].children[0].children[i].style.left.includes("123px") ||  page.children[1].children[0].children[i].style.left.includes("119px"))
+                        {
+                            if(page.children[1].children[0].children[i].textContent.length > 2)
+                            {
+                                if(file.name != oldDetectedAssignment)
+                                {
+                                    var stringParts = file.name.split("-");
+                                    if(stringParts[5] == "o")
+                                    assignmentOnPageTracker.push(file.name);
+                                }
+                                oldDetectedAssignment = file.name;
+                                 assignmentCount = 1;
+                                 //console.log(page.children[1]);
+                            }
+                            else{
+                            var number = parseInt(page.children[1].children[0].children[i].textContent, 10);
+                            if(!isNaN(number)) // hier heb ik een pagina nummer te pakken
+                            {
+                                //console.log(number);
+                               // console.log(page.children[1].children[0].children[i].innerHTML);
+                                page.children[1].children[0].children[i].innerHTML = "<b>" + assignmentCount + "</b>"
+                                if(page.children[1].children[0].children[i].nextElementSibling.style.left == "136px")
+                                {
+                                    page.children[1].children[0].children[i].nextElementSibling.style.left = "149px"
+                                }
+
+                                //console.log()
+                                assignmentCount++;
+                            }
+                            }                     
+                        }         
+                    if(page.children[1].children[0].children[i].textContent.toLowerCase().match(file.name.substring(0, file.name.lastIndexOf("-"))))
+                     {
+                         console.log("kuthoer");
+                        page.children[1].children[0].children[i].remove();
+                        i--;
+                     }
+                 }
+                 // console.log(file.name);
+               var obj = new Object();
+               obj.innerHTML = page.innerHTML;
+               obj.fileName = file.name;
+               obj.ImgPath = imgpath;
+           // var object = {innerHTML: page.innerHTML, fileName: file.name, ImgPath: imgpath , ImgName: imgName}
+           //console.log(page.innerHTML);
+               filesToExport.push(obj);
+              count++;
+              if(count == files.length)
+              {
+                downloadCurrentDocuments(filesToExport, assignmentOnPageTracker);
+              }
+            
+
+    }
+    reader.readAsText(file, "UTF-8");
+
+  })
+
+
+//console.log(filesToExport);
+
+//                 $("#fileContents").load("assets/docs/" + file.name);
+// console.log("assets/docs/" + file.name);
+ 
+}
+function getImgPath(imgPath)
+{
+ var numberExt
+ var imgNumber = imgPath.substr(imgPath.lastIndexOf('-') + 1, imgPath.lastIndexOf('.')) //output == 2.html
+ var stringParts = [];
+ stringParts = imgPath.split("-");
+   //console.log(stringParts);
+ stringParts[6] = stringParts[6].replace(".html", ""); 
+
+ var imgNumberINT = parseInt(stringParts[6]); //output == 2 (INT)
+ var temp = 0;
+ if(imgNumberINT < 10)
+ {
+     numberExt = stringParts[5] + "00" + stringParts[6];
+     temp = 1;
+ }
+ else{
+
+     numberExt = stringParts[5] + "0" + stringParts[6];
+     temp = 2;
+ }
+ var toReplace = imgPath.substr(imgPath.indexOf(stringParts[5] + '-'), imgPath.lastIndexOf('.')); //output == o-2.html
+ imgPath = imgPath.replace(toReplace, numberExt);
+ imgPath = "images/" + imgPath + ".png";
+
+return imgPath;
+}
+
+function downloadCurrentDocuments(filesToExport, assignmentOnPageTracker) {
+    var zip = new JSZip();
+ var assignmentCount = 0;
+ var partCount = 1;
+ var parts = [];
+var jsonJaar;// = "20" + parts[3] + "-" + parts[4];
+var oudVak = filesToExport[0].fileName.split("-");
+var objVak = [];
+var jObjectOpgave = {};
+var flag = false;
+console.log(filesToExport);
+for (i = 0; i < filesToExport.length; i++) {
+     parts = filesToExport[i].fileName.split("-");
+     if(parts[5] == "o") // 1. check op document type
+     {
+       if(parts[1] + parts[2] + parts[3] + parts[4] != oudVak[1] + oudVak[2] + oudVak[3] + oudVak[4]) //2. check op een nieuwe examenbundel
+        {
+                    jsonJaar = "20" + oudVak[3] + "-" + oudVak[4]
+                    var vakPlusNiveauCode = oudVak[0]+"-"+oudVak[1]
+                    objVak.push({[vakPlusNiveauCode]: {[jsonJaar]: jObjectOpgave}});
+                   // console.log(jObjectOpgave);
+                    assignmentCount = 0;
+                    oudVak = parts;
+                    console.log("NIEUWE BUNDEL");
+                    jObjectOpgave = {};
+        }
+
+        for(x = 0; x < assignmentOnPageTracker.length; x++ ) // 3. check op nieuwe opdracht
+       {
+           if(assignmentOnPageTracker[x] == filesToExport[i].fileName)
+           {
+               flag = true;
+               break;
+           }
+       }
+    //console.log(filesToExport[i].fileName);
+
+       if(flag) // 4. zet nieuwe opdracht erin
+       {
+            partCount = 1;
+            assignmentCount++;
+            var tempString1 = "Opgave " +  assignmentCount;
+            var tempString2 = "Deel" + partCount;
+            jObjectOpgave[tempString1] = {[tempString2]: "con" + filesToExport[i].fileName};
+                   // console.log(jObjectOpgave);
+
+            partCount++;
+       }
+       else{ // 5. zet een nieuw deel erin
+            var tempString1 = "Opgave " +  assignmentCount;
+            var tempString2 = "Deel" + partCount;
+            if(assignmentCount > 0)
+            {
+                jObjectOpgave[tempString1][tempString2] = "con" + filesToExport[i].fileName;
+            }
+            else{
+                //console.log(filesToExport[i].fileName);
+                jObjectOpgave["Opgave 1"] = {[tempString2]: "con" + filesToExport[i].fileName};
+            }
+            //console.log(tempString1);
+            partCount++;
+       }
+                   flag = false;
+     }
+        filesToExport[i].fileName = "con" + filesToExport[i].fileName;
+        zip.file(filesToExport[i].fileName, filesToExport[i].innerHTML);
+    }
+    //console.log(parts[1]);
+                        //console.log(jObjectOpgave);
+                    if(objVak != {})
+                    {
+                        var vakPlusNiveauCode = oudVak[0]+"-"+oudVak[1]
+                        jsonJaar = "20" + parts[3] + "-" + parts[4]
+                        objVak.push({[vakPlusNiveauCode]: {[jsonJaar]: jObjectOpgave}}) ;
+                    }
+                    
+
+                console.log(JSON.stringify(objVak));
+            zip.file("test.json", JSON.stringify(objVak));
+            var img = zip.folder("images");
+                zip.generateAsync({type:"blob"})
+                .then(function(content) {
+                    // see FileSaver.js
+                    //saveAs(content, filesToExport[0].fileName);
+                });
+
+} 
+ $('#inputField').click(function() {
+     ///('#dropzone').reset();
+ });
+
+</script>
+</body>
+</html>

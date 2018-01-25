@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+<title>dropzone</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+</head>
+<body >
+
+  <form id = "dropzone" method="post" oninput = "validate(this)" enctype="multipart/form-data">
+  <input type="file" name="file" multiple/>
+</form>
+<a href="#" id="downloadLink">Download the inner html</a>
+<div id ="fileContents"></div>
+      <script src="assets/jquery.min.js"></script>
+      <script src="assets/jszip.min.js"></script>
+      <script src="assets/FileSaver.min.js"></script>
+
+
+<script>
+var _validFileExtensions = [".html"]; 
+    var reader = new FileReader();  
+    var filesToExport = []; 
+    var imgName;
+function validate(oForm) {
+    var arrInputs = oForm.getElementsByTagName("input");
+    for (var i = 0; i < arrInputs.length; i++) {
+        var oInput = arrInputs[i];
+        if (oInput.type == "file") {
+            var sFileName = oInput.value;
+            if (sFileName.length > 0) {
+                var blnValid = false;
+                for (var j = 0; j < _validFileExtensions.length; j++) {
+                    var sCurExtension = _validFileExtensions[j];
+                    if (sFileName.substr(sFileName.length - sCurExtension.length, sCurExtension.length).toLowerCase() == sCurExtension.toLowerCase()) {
+                        blnValid = true;
+                        replace(oForm.getElementsByTagName("input"));
+                        break;
+                    }
+                }
+                if (!blnValid) {
+                    alert("Sorry, " + sFileName + " is invalid, allowed extensions are: " + _validFileExtensions.join(", "));
+                    oForm.getElementsByTagName("input").value = "";
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+function replace(arr)
+{
+
+const files = arr.file.files;
+//console.log(files.length);
+var count = 0;
+    var fileValue;
+
+  Object.keys(files).forEach(i => {
+    const file = files[i];
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+     fileValue = evt.target.result;
+          var page = document.createElement('html');
+                var imgpath = getImgPath(file.name);
+                page.innerHTML = fileValue;
+                page.children[0].innerHTML += "<style> p{font-family: 'Arial'!important;} body{background:'white';background-image: url("+ imgpath +");background-position: -75px -50px !important;background-repeat: no-repeat !important;}</style>";
+                page.children[1].removeAttribute("bgcolor");
+                page.children[1].setAttribute("style", "margin:-75px!important; margin-top:-50px!important;");
+                page.children[1].children[0].setAttribute("style", "position:relative;width:892px;height:auto;");
+                page.children[1].children[0].children
+                 for (var i = 0; i < page.children[1].children[0].children.length; i++)
+                 {
+                            //console.log(page.children[1].children[0].children[i].innerHTML);
+                            if(page.children[1].children[0].children[i].innerHTML == "►►►")
+                            {
+                                 page.children[1].children[0].children[i].remove()
+                                 break;
+                            }
+                           page.children[1].children[0].children[i].remove()
+                           i--;
+                 }
+
+               document.getElementById("fileContents").innerHTML += page.innerHTML;
+                var obj = new Object();
+               obj.innerHTML = page.innerHTML;
+               obj.fileName = file.name;
+               obj.ImgPath = imgpath;
+               obj.ImgName = imgName;
+           // var object = {innerHTML: page.innerHTML, fileName: file.name, ImgPath: imgpath , ImgName: imgName}
+               filesToExport.push(obj);
+              count++;
+              if(count == files.length)
+              {
+                downloadCurrentDocuments(filesToExport);
+              }
+    }
+    reader.readAsText(file, "UTF-8");
+
+  })
+
+
+//console.log(filesToExport);
+
+//                 $("#fileContents").load("assets/docs/" + file.name);
+// console.log("assets/docs/" + file.name);
+ 
+}
+function getImgPath(imgPath)
+{
+ var numberExt
+ var imgNumber = imgPath.substr(imgPath.lastIndexOf('-') + 1, imgPath.lastIndexOf('.')) //output == 2.html
+ imgNumber = imgNumber.replace(".html", ""); //output == 2
+ var imgNumberINT = parseInt(imgNumber); //output == 2 (INT)
+ var temp = 0;
+ if(imgNumberINT < 10)
+ {
+     numberExt = "o00" + imgNumberINT;
+     temp = 1;
+ }
+ else{
+
+     numberExt = "o0" + imgNumberINT;
+     temp = 2;
+ }
+ var toReplace = imgPath.substr(imgPath.indexOf('o-'), imgPath.lastIndexOf('.')); //output == o-2.html
+ imgPath = imgPath.replace(toReplace, numberExt);
+ imgName = imgPath + ".png";
+  imgPath = "assets/docs/" + imgPath + ".png";
+
+//console.log(imgPath);
+return imgPath;
+}
+
+function downloadCurrentDocuments(filesToExport) {
+    var zip = new JSZip();
+
+//console.log(filesToExport);
+ var count = 0;
+
+for (i = 0; i < filesToExport.length; i++) {
+    var imgData = new Image();
+    imgData.src = filesToExport[i].ImgPath;
+    imgData.onload = (function(value){
+        var base64 = getBase64Image(imgData);
+        filesToExport[i].fileName = "con" + filesToExport[i].fileName;
+        zip.file(filesToExport[i].fileName, filesToExport[i].innerHTML);
+            console.log(base64);
+            //console.log(filesToExport[i].innerHTML);
+            console.log(filesToExport[i].fileName);
+            console.log(filesToExport[i].ImgPath);
+            console.log("-----------------------------------------------------------");
+            count++;
+            if(count == filesToExport.length)
+            {
+            var img = zip.folder("assets");
+                var finf = img.folder("docs");
+                finf.file(imgName, base64, {base64: true});
+                zip.generateAsync({type:"blob"})
+                .then(function(content) {
+                    // see FileSaver.js
+                    saveAs(content, "example.zip");
+                });
+                }
+    })(i);
+
+
+} 
+
+
+//   var base64doc = btoa(unescape(encodeURIComponent(html))),
+//       a = document.createElement('a'),
+//       e = new MouseEvent('click');
+
+//   a.download = 'doc.html';
+//   a.href = 'data:text/html;base64,' + base64doc;
+//   a.dispatchEvent(e);
+}
+function getBase64Image(img) {
+  var canvas = document.createElement("canvas");
+  canvas.width = img.width;
+  canvas.height = img.height;
+  var ctx = canvas.getContext("2d");
+  ctx.drawImage(img, 0, 0);
+  var dataURL = canvas.toDataURL("image/png");
+  return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+}
+
+$('#downloadLink').click(function(){
+    if(document.getElementById("fileContents").innerHTML != "")
+    {
+        downloadCurrentDocument();
+    }
+});
+
+</script>
+</body>
+</html>
