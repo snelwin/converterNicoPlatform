@@ -70,22 +70,34 @@ const files = arr;
                 page.children[1].setAttribute("style", "margin:-75px!important; margin-top:-50px!important;");
                 page.children[1].children[0].setAttribute("style", "position:relative;width:892px;height:auto;");
                 page.children[1].children[0].children[0].remove();
-
                  for (var i = 0; i < page.children[1].children[0].children.length; i++)
                  {
-                            if(page.children[1].children[0].children[i].innerHTML.match("►►►"))
-                            {
-                                 for (var x = i - 4; x <= i; x++)
-                                    {
-                                        if(page.children[1].children[0].children[x].innerHTML.match("►►►"))
+                            try{
+                                if(page.children[1].children[0].children[i].innerHTML.match("►►►"))
+                                {
+                                    for (var x = i - 4; x <= i; x++)
                                         {
-                                             page.children[1].children[0].children[x].remove();
-                                             break;
+                                            //console.log(file.name);
+                                            try{
+                                                if(page.children[1].children[0].children[x].innerHTML.match("►►►"))
+                                                {
+                                                    page.children[1].children[0].children[x].remove();
+                                                    break;
+                                                }
+                                                page.children[1].children[0].children[x].remove();
+                                                x--;
+                                                }
+                                            catch(err)
+                                            {
+                                               console.log(err.message + "    op   " + file.name + "   OP INDEX  " + x);
+                                            }
                                         }
-                                        page.children[1].children[0].children[x].remove();
-                                        x--;
-                                    }
-                                 break;
+                                    break;
+                                }
+                            }
+                            catch(err)
+                            {
+                                console.log(err.message + "    op   " + file.name + "   OP INDEX  " + i);
                             }
                  }
                         try {
@@ -142,7 +154,7 @@ const files = arr;
                         }         
                     if(page.children[1].children[0].children[i].textContent.toLowerCase().match(file.name.substring(0, file.name.lastIndexOf("-"))))
                      {
-                         console.log("kuthoer");
+                         //console.log("kuthoer");
                         page.children[1].children[0].children[i].remove();
                         i--;
                      }
