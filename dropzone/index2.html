@@ -221,26 +221,36 @@ function downloadCurrentDocuments(filesToExport, assignmentOnPageTracker) {
  var parts = [];
 var jsonJaar;// = "20" + parts[3] + "-" + parts[4];
 var oudVak = filesToExport[0].fileName.split("-");
-var objVak = [];
+var objVak = {};
 var jObjectOpgave = {};
+jObjectOpgave.Bijlage = false;
+jObjectOpgave.Uitwerkingsbijlage = false;
 var flag = false;
-console.log(filesToExport);
 for (i = 0; i < filesToExport.length; i++) {
      parts = filesToExport[i].fileName.split("-");
-     if(parts[5] == "o") // 1. check op document type
-     {
-       if(parts[1] + parts[2] + parts[3] + parts[4] != oudVak[1] + oudVak[2] + oudVak[3] + oudVak[4]) //2. check op een nieuwe examenbundel
+    if(parts[1] + parts[2] + parts[3] + parts[4] != oudVak[1] + oudVak[2] + oudVak[3] + oudVak[4]) //2. check op een nieuwe examenbundel
         {
                     jsonJaar = "20" + oudVak[3] + "-" + oudVak[4]
-                    var vakPlusNiveauCode = oudVak[0]+"-"+oudVak[1]
-                    objVak.push({[vakPlusNiveauCode]: {[jsonJaar]: jObjectOpgave}});
+                    var vakPlusNiveauCode = oudVak[0] + "-" + oudVak[1]
+                    vakPlusNiveauCode = vakPlusNiveauCode.toLowerCase();
+                    console.log(vakPlusNiveauCode +"-"+ jsonJaar +"-------"+ jObjectOpgave.Bijlage);
+                    if(vakPlusNiveauCode in objVak)
+                    {
+                        objVak[vakPlusNiveauCode][jsonJaar] = jObjectOpgave;     
+                    }
+                    else{
+                        objVak[vakPlusNiveauCode] = {[jsonJaar]: jObjectOpgave};
+                    }
                    // console.log(jObjectOpgave);
                     assignmentCount = 0;
                     oudVak = parts;
                     console.log("NIEUWE BUNDEL");
                     jObjectOpgave = {};
+                    jObjectOpgave.Bijlage = false;
+                    jObjectOpgave.Uitwerkingsbijlage = false;
         }
-
+     if(parts[5] == "o") // 1. check op document type
+     {
         for(x = 0; x < assignmentOnPageTracker.length; x++ ) // 3. check op nieuwe opdracht
        {
            if(assignmentOnPageTracker[x] == filesToExport[i].fileName)
@@ -276,18 +286,33 @@ for (i = 0; i < filesToExport.length; i++) {
             //console.log(tempString1);
             partCount++;
        }
-                   flag = false;
+            flag = false;
+     }
+     else if(parts[5] == "u")
+     {
+        jObjectOpgave.Uitwerkingsbijlage = true;
+     }
+     else if(parts[5] == "b")
+     {        
+        jObjectOpgave.Bijlage = true;
      }
         filesToExport[i].fileName = "con" + filesToExport[i].fileName;
         zip.file(filesToExport[i].fileName, filesToExport[i].innerHTML);
     }
-    //console.log(parts[1]);
-                        //console.log(jObjectOpgave);
                     if(objVak != {})
                     {
-                        var vakPlusNiveauCode = oudVak[0]+"-"+oudVak[1]
-                        jsonJaar = "20" + parts[3] + "-" + parts[4]
-                        objVak.push({[vakPlusNiveauCode]: {[jsonJaar]: jObjectOpgave}}) ;
+                            var vakPlusNiveauCode = oudVak[0]+"-"+oudVak[1]
+                            vakPlusNiveauCode = vakPlusNiveauCode.toLowerCase();
+
+                            jsonJaar = "20" + parts[3] + "-" + parts[4]
+                            //objVak.push({[vakPlusNiveauCode]: {[jsonJaar]: jObjectOpgave}});
+                            if(vakPlusNiveauCode in objVak)
+                            {
+                                objVak[vakPlusNiveauCode][jsonJaar] = jObjectOpgave;     
+                            }
+                            else{
+                                objVak[vakPlusNiveauCode] = {[jsonJaar]: jObjectOpgave};
+                            }
                     }
                     
 
@@ -297,7 +322,7 @@ for (i = 0; i < filesToExport.length; i++) {
                 zip.generateAsync({type:"blob"})
                 .then(function(content) {
                     // see FileSaver.js
-                    //saveAs(content, filesToExport[0].fileName);
+                    saveAs(content, filesToExport[0].fileName);
                 });
 
 } 
