@@ -136,28 +136,36 @@ const files = arr;
                                  //console.log(page.children[1]);
                             }
                             else{
-                            var number = parseInt(page.children[1].children[0].children[i].textContent, 10);
-                            if(!isNaN(number)) // hier heb ik een pagina nummer te pakken
-                            {
-                                //console.log(number);
-                               // console.log(page.children[1].children[0].children[i].innerHTML);
-                                page.children[1].children[0].children[i].innerHTML = "<b>" + assignmentCount + "</b>"
-                                if(page.children[1].children[0].children[i].nextElementSibling.style.left == "136px")
+                                var number = parseInt(page.children[1].children[0].children[i].textContent, 10);
+                                if(!isNaN(number)) // hier heb ik een pagina te pakken
                                 {
-                                    page.children[1].children[0].children[i].nextElementSibling.style.left = "149px"
+                                    page.children[1].children[0].children[i].innerHTML = "<b>" + assignmentCount + "</b>"
+                                    if(page.children[1].children[0].children[i].nextElementSibling.style.left == "136px")
+                                    {
+                                        page.children[1].children[0].children[i].nextElementSibling.style.left = "149px"
+                                    }
+                                    assignmentCount++;
                                 }
-
-                                //console.log()
-                                assignmentCount++;
-                            }
                             }                     
-                        }         
-                    if(page.children[1].children[0].children[i].textContent.toLowerCase().match(file.name.substring(0, file.name.lastIndexOf("-"))))
+                        }   
+                    if(page.children[1].children[0].children[i].textContent.toLowerCase().match(file.name.toLowerCase().substring(0, file.name.toLowerCase().lastIndexOf("-"))))
                      {
-                         //console.log("kuthoer");
                         page.children[1].children[0].children[i].remove();
                         i--;
                      }
+                    try{
+                        //console.log(page.children[1].children[0].children[i]);
+                        if(page.children[1].children[0].children[i].textContent == "einde" || page.children[1].children[0].children[i].innerHTML == "einde&nbsp;")
+                        {
+                            page.children[1].children[0].children[i].nextElementSibling.remove();
+                            page.children[1].children[0].children[i].remove();
+                            i--;
+                        }
+                    }
+                    catch(err)
+                    {
+                        console.log(err.message + "    op   " + file.name + "   OP INDEX  " + i);
+                    }
                  }
                  // console.log(file.name);
                var obj = new Object();
@@ -290,11 +298,39 @@ for (i = 0; i < filesToExport.length; i++) {
      }
      else if(parts[5] == "u")
      {
-        jObjectOpgave.Uitwerkingsbijlage = true;
+        
+         jsonJaar = "20" + parts[3] + "-" + parts[4]
+         var vakPlusNiveauCode = parts[0] + "-" + parts[1]
+         vakPlusNiveauCode = vakPlusNiveauCode.toLowerCase();
+         if(vakPlusNiveauCode in objVak)
+         { 
+             if(jsonJaar in objVak[vakPlusNiveauCode]){
+                 objVak[vakPlusNiveauCode][jsonJaar].Uitwerkingsbijlage = true;
+             }
+            else{jObjectOpgave.Uitwerkingsbijlage = true;}
+         } 
+         else
+         {
+            jObjectOpgave.Uitwerkingsbijlage = true; 
+         }
      }
      else if(parts[5] == "b")
-     {        
-        jObjectOpgave.Bijlage = true;
+     {  
+         jsonJaar = "20" + parts[3] + "-" + parts[4]
+         var vakPlusNiveauCode = parts[0] + "-" + parts[1]
+         vakPlusNiveauCode = vakPlusNiveauCode.toLowerCase();
+         if(vakPlusNiveauCode in objVak)
+         { 
+             if(jsonJaar in objVak[vakPlusNiveauCode]){
+                 objVak[vakPlusNiveauCode][jsonJaar].Bijlage = true;
+             }
+            else{jObjectOpgave.Bijlage = true;}
+
+         } 
+         else
+         {
+            jObjectOpgave.Bijlage = true;
+         }
      }
         filesToExport[i].fileName = "con" + filesToExport[i].fileName;
         zip.file(filesToExport[i].fileName, filesToExport[i].innerHTML);
@@ -322,7 +358,7 @@ for (i = 0; i < filesToExport.length; i++) {
                 zip.generateAsync({type:"blob"})
                 .then(function(content) {
                     // see FileSaver.js
-                    saveAs(content, filesToExport[0].fileName);
+                    //saveAs(content, filesToExport[0].fileName);
                 });
 
 } 
