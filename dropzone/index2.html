@@ -11,6 +11,7 @@
   <form id = "dropzone" method="post" oninput = "validate(this)" enctype="multipart/form-data">
   <input id = "inputField" type="file" name="file" multiple/>
 </form>
+<button id = "downloadAgain" type="button">Downloaduuuuuuuuuuuuh</button>
 <div id ="fileContents"></div>
       <script src="assets/jquery.min.js"></script>
       <script src="assets/jszip.min.js"></script>
@@ -21,6 +22,7 @@
     var reader = new FileReader();  
     var filesToExport = []; 
     var assignmentOnPageTracker = [];
+    var assignmentsOnSamePage = [];
 
 function validate(oForm) {
     var arrInputs = oForm.getElementsByTagName("input");
@@ -86,11 +88,21 @@ const files = arr;
                                                 }
                                                 page.children[1].children[0].children[x].remove();
                                                 x--;
+                                                i--;
                                                 }
                                             catch(err)
                                             {
                                                console.log(err.message + "    op   " + file.name + "   OP INDEX  " + x);
                                             }
+                                        }
+                                        if(page.children[1].children[0].children[i].innerHTML == "&nbsp;")
+                                        {
+                                            if(page.children[1].children[0].children[i].nextElementSibling.innerHTML == "&nbsp;")
+                                            {
+                                                page.children[1].children[0].children[i].nextElementSibling.remove();
+                                            }
+                                            page.children[1].children[0].children[i].remove();
+                                            i--;
                                         }
                                     break;
                                 }
@@ -113,12 +125,10 @@ const files = arr;
                                page.children[1].children[0].lastElementChild.remove();
                             }
                         }
-                        catch(err) {
-                            //console.log(err.message);
-                            //console.log(page.children[1].children[0]);
- 
-                        }
-                 var oldDetectedAssignment = "";          
+                        catch(err) {}
+
+                 var oldDetectedAssignment = ""; 
+                 var assignmentDetected = false;         
                  for (var i = 0; i < page.children[1].children[0].children.length; i++)
                  {
                         if( page.children[1].children[0].children[i].style.left.includes("123px") ||  page.children[1].children[0].children[i].style.left.includes("119px"))
@@ -130,10 +140,14 @@ const files = arr;
                                     var stringParts = file.name.split("-");
                                     if(stringParts[5] == "o")
                                     assignmentOnPageTracker.push(file.name);
+                                    assignmentDetected = true;
                                 }
-                                oldDetectedAssignment = file.name;
+                                else if(assignmentDetected) // Hier is er een nieuwe opdracht gedetecteerd op een pagina waar ook een andere opgave op staat
+                                {
+                                    assignmentsOnSamePage.push(file.name);
+                                }
+                                 oldDetectedAssignment = file.name;
                                  assignmentCount = 1;
-                                 //console.log(page.children[1]);
                             }
                             else{
                                 var number = parseInt(page.children[1].children[0].children[i].textContent, 10);
@@ -161,6 +175,14 @@ const files = arr;
                             page.children[1].children[0].children[i].remove();
                             i--;
                         }
+                        if(page.children[1].children[0].children[i].style.left.includes("85px"))
+                        {
+                            page.children[1].children[0].children[i].style.left = "95px";
+                        }
+                        if(page.children[1].children[0].children[i].textContent.includes("Æ"))
+                        {
+                            page.children[1].children[0].children[i].innerHTML = page.children[1].children[0].children[i].innerHTML.replace(/Æ/g,"&#10140;");
+                        }
                     }
                     catch(err)
                     {
@@ -178,10 +200,8 @@ const files = arr;
               count++;
               if(count == files.length)
               {
-                downloadCurrentDocuments(filesToExport, assignmentOnPageTracker);
+                downloadCurrentDocuments(filesToExport, assignmentOnPageTracker, assignmentsOnSamePage);
               }
-            
-
     }
     reader.readAsText(file, "UTF-8");
 
@@ -222,11 +242,11 @@ function getImgPath(imgPath)
 return imgPath;
 }
 
-function downloadCurrentDocuments(filesToExport, assignmentOnPageTracker) {
-    var zip = new JSZip();
- var assignmentCount = 0;
- var partCount = 1;
- var parts = [];
+function downloadCurrentDocuments(filesToExport, assignmentOnPageTracker, assignmentsOnSamePage) {
+var zip = new JSZip();
+var assignmentCount = 0;
+var partCount = 1;
+var parts = [];
 var jsonJaar;// = "20" + parts[3] + "-" + parts[4];
 var oudVak = filesToExport[0].fileName.split("-");
 var objVak = {};
@@ -234,6 +254,7 @@ var jObjectOpgave = {};
 jObjectOpgave.Bijlage = false;
 jObjectOpgave.Uitwerkingsbijlage = false;
 var flag = false;
+var twoAssignmentsOnSamePageflag = false;
 for (i = 0; i < filesToExport.length; i++) {
      parts = filesToExport[i].fileName.split("-");
     if(parts[1] + parts[2] + parts[3] + parts[4] != oudVak[1] + oudVak[2] + oudVak[3] + oudVak[4]) //2. check op een nieuwe examenbundel
@@ -241,7 +262,7 @@ for (i = 0; i < filesToExport.length; i++) {
                     jsonJaar = "20" + oudVak[3] + "-" + oudVak[4]
                     var vakPlusNiveauCode = oudVak[0] + "-" + oudVak[1]
                     vakPlusNiveauCode = vakPlusNiveauCode.toLowerCase();
-                    console.log(vakPlusNiveauCode +"-"+ jsonJaar +"-------"+ jObjectOpgave.Bijlage);
+                    //console.log(vakPlusNiveauCode +"-"+ jsonJaar +"-------"+ jObjectOpgave.Bijlage);
                     if(vakPlusNiveauCode in objVak)
                     {
                         objVak[vakPlusNiveauCode][jsonJaar] = jObjectOpgave;     
@@ -267,6 +288,14 @@ for (i = 0; i < filesToExport.length; i++) {
                break;
            }
        }
+        for(x = 0; x < assignmentsOnSamePage.length; x++ ) // 3. check op nieuwe opdracht
+       {
+           if(assignmentsOnSamePage[x] == filesToExport[i].fileName)
+           {
+               twoAssignmentsOnSamePageflag = true;
+               break;
+           }
+       }
     //console.log(filesToExport[i].fileName);
 
        if(flag) // 4. zet nieuwe opdracht erin
@@ -276,7 +305,13 @@ for (i = 0; i < filesToExport.length; i++) {
             var tempString1 = "Opgave " +  assignmentCount;
             var tempString2 = "Deel" + partCount;
             jObjectOpgave[tempString1] = {[tempString2]: "con" + filesToExport[i].fileName};
-                   // console.log(jObjectOpgave);
+            if(twoAssignmentsOnSamePageflag)
+            {
+                assignmentCount++;
+                var tempString1 = "Opgave " +  assignmentCount;
+                var tempString2 = "Deel" + partCount;
+                jObjectOpgave[tempString1] = {[tempString2]: "con" + filesToExport[i].fileName};
+            }
 
             partCount++;
        }
@@ -295,6 +330,7 @@ for (i = 0; i < filesToExport.length; i++) {
             partCount++;
        }
             flag = false;
+            twoAssignmentsOnSamePageflag = false;
      }
      else if(parts[5] == "u")
      {
@@ -332,7 +368,10 @@ for (i = 0; i < filesToExport.length; i++) {
             jObjectOpgave.Bijlage = true;
          }
      }
+     if(!filesToExport[i].fileName.match("con"))
+     {
         filesToExport[i].fileName = "con" + filesToExport[i].fileName;
+     }
         zip.file(filesToExport[i].fileName, filesToExport[i].innerHTML);
     }
                     if(objVak != {})
@@ -358,13 +397,18 @@ for (i = 0; i < filesToExport.length; i++) {
                 zip.generateAsync({type:"blob"})
                 .then(function(content) {
                     // see FileSaver.js
-                    //saveAs(content, filesToExport[0].fileName);
+                    saveAs(content, filesToExport[0].fileName);
                 });
-
 } 
- $('#inputField').click(function() {
-     ///('#dropzone').reset();
- });
+
+$( "#downloadAgain" ).click(function() {
+    if ($('#inputField').get(0).files.length === 0) {
+        alert("Ginne files geselecteerd KUT");
+    }
+    else{
+        validate(document.getElementById("dropzone"))
+    }
+});
 
 </script>
 </body>
