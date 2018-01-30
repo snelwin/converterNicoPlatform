@@ -179,9 +179,29 @@ const files = arr;
                         {
                             page.children[1].children[0].children[i].style.left = "95px";
                         }
+                        if(page.children[1].children[0].children[i].textContent.includes(""))
+                        {
+                            page.children[1].children[0].children[i].innerHTML = page.children[1].children[0].children[i].innerHTML.replace(//g,"-")
+                        }
                         if(page.children[1].children[0].children[i].textContent.includes("Æ"))
                         {
                             page.children[1].children[0].children[i].innerHTML = page.children[1].children[0].children[i].innerHTML.replace(/Æ/g,"&#10140;");
+                        }
+                        if(page.children[1].children[0].children[i].textContent.includes(""))
+                        {
+                            page.children[1].children[0].children[i].innerHTML = page.children[1].children[0].children[i].innerHTML.replace(//g,"&#10140;");
+                        }
+                        if(page.children[1].children[0].children[i].textContent.includes(""))
+                        {
+                            page.children[1].children[0].children[i].innerHTML = page.children[1].children[0].children[i].innerHTML.replace(//g,"-");
+                        }
+                        if(page.children[1].children[0].children[i].style.top == "1174px" || page.children[1].children[0].children[i].style.top == "1179px")
+                        {
+                            if(page.children[1].children[0].children[i].innerHTML == "&nbsp;")
+                            {
+                                page.children[1].children[0].children[i].remove();
+                                i--;
+                            }
                         }
                     }
                     catch(err)
