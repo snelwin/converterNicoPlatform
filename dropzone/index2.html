@@ -23,6 +23,8 @@
     var filesToExport = []; 
     var assignmentOnPageTracker = [];
     var assignmentsOnSamePage = [];
+    var ongoingAssignments = [];
+    var eratumBlad = false;
 
 function validate(oForm) {
     var arrInputs = oForm.getElementsByTagName("input");
@@ -40,7 +42,6 @@ function validate(oForm) {
                 {
                     fileListToProceed.push(arrInputs.file.files[i]);    
                 }
-                
             }
         }
     }
@@ -67,9 +68,18 @@ const files = arr;
                 var imgpath = getImgPath(file.name);
                 page.innerHTML = fileValue;
                // console.log(page.children[1].innerHTML);
-                page.children[0].innerHTML += "<style> p{font-family: 'Arial'!important;} body{background:'white';background-image: url("+ imgpath +");background-position: -75px -50px !important;background-repeat: no-repeat !important;}</style>";
+                page.children[0].innerHTML += "<style> p{font-family: 'Arial'!important;} body{background:'white';background-image: url("+ imgpath +");background-position: -75px -50px !important;background-repeat: no-repeat !important;}";
+                if(page.children[0].children[2].innerHTML.includes("matrix"))
+                {
+                    page.children[0].innerHTML += "p{transition-property: none !important;transform: none !important;animation: none !important;}";
+                }
+                page.children[0].innerHTML += "</style>";
+                console.log(page.children[0].children[2].innerHTML);
                 page.children[1].removeAttribute("bgcolor");
-                page.children[1].setAttribute("style", "margin:-75px!important; margin-top:-50px!important;");
+                page.children[1].setAttribute("style", "margin:-75px!important; margin-top:-50px!important;margin-bottom:0px!important;overflow-x:hidden!important");
+                page.children[1].setAttribute("vlink", "blue");
+                page.children[1].setAttribute("link", "blue");
+                
                 page.children[1].children[0].setAttribute("style", "position:relative;width:892px;height:auto;");
                 page.children[1].children[0].children[0].remove();
                  for (var i = 0; i < page.children[1].children[0].children.length; i++)
@@ -126,11 +136,16 @@ const files = arr;
                             }
                         }
                         catch(err) {}
-
+                 var ongoingAssignmentFlag = false;
                  var oldDetectedAssignment = ""; 
                  var assignmentDetected = false;         
                  for (var i = 0; i < page.children[1].children[0].children.length; i++)
                  {
+                     if(page.children[1].children[0].children[i].style.left.includes("85px"))
+                     {
+                        ongoingAssignmentFlag = true;
+                        page.children[1].children[0].children[i].style.left = "95px";
+                     }
                         if( page.children[1].children[0].children[i].style.left.includes("123px") ||  page.children[1].children[0].children[i].style.left.includes("119px"))
                         {
                             if(page.children[1].children[0].children[i].textContent.length > 2)
@@ -138,9 +153,18 @@ const files = arr;
                                 if(file.name != oldDetectedAssignment)
                                 {
                                     var stringParts = file.name.split("-");
-                                    if(stringParts[5] == "o")
-                                    assignmentOnPageTracker.push(file.name);
-                                    assignmentDetected = true;
+                                    if(!ongoingAssignmentFlag)
+                                    {
+                                        if(stringParts[5] == "o")
+                                        assignmentOnPageTracker.push(file.name);
+                                        assignmentDetected = true;
+                                    }
+                                    else{
+                                        assignmentOnPageTracker.push(file.name);
+                                        ongoingAssignments.push(file.name);
+                                        assignmentDetected = true;
+
+                                    }
                                 }
                                 else if(assignmentDetected) // Hier is er een nieuwe opdracht gedetecteerd op een pagina waar ook een andere opgave op staat
                                 {
@@ -174,10 +198,6 @@ const files = arr;
                             page.children[1].children[0].children[i].nextElementSibling.remove();
                             page.children[1].children[0].children[i].remove();
                             i--;
-                        }
-                        if(page.children[1].children[0].children[i].style.left.includes("85px"))
-                        {
-                            page.children[1].children[0].children[i].style.left = "95px";
                         }
                         if(page.children[1].children[0].children[i].textContent.includes(""))
                         {
@@ -220,7 +240,7 @@ const files = arr;
               count++;
               if(count == files.length)
               {
-                downloadCurrentDocuments(filesToExport, assignmentOnPageTracker, assignmentsOnSamePage);
+                downloadCurrentDocuments(filesToExport, assignmentOnPageTracker, assignmentsOnSamePage, ongoingAssignments);
               }
     }
     reader.readAsText(file, "UTF-8");
@@ -262,7 +282,7 @@ function getImgPath(imgPath)
 return imgPath;
 }
 
-function downloadCurrentDocuments(filesToExport, assignmentOnPageTracker, assignmentsOnSamePage) {
+function downloadCurrentDocuments(filesToExport, assignmentOnPageTracker, assignmentsOnSamePage, ongoingAssignments) {
 var zip = new JSZip();
 var assignmentCount = 0;
 var partCount = 1;
@@ -275,6 +295,7 @@ jObjectOpgave.Bijlage = false;
 jObjectOpgave.Uitwerkingsbijlage = false;
 var flag = false;
 var twoAssignmentsOnSamePageflag = false;
+var ongoingAssignmentFlag = false;
 for (i = 0; i < filesToExport.length; i++) {
      parts = filesToExport[i].fileName.split("-");
     if(parts[1] + parts[2] + parts[3] + parts[4] != oudVak[1] + oudVak[2] + oudVak[3] + oudVak[4]) //2. check op een nieuwe examenbundel
@@ -316,28 +337,42 @@ for (i = 0; i < filesToExport.length; i++) {
                break;
            }
        }
-    //console.log(filesToExport[i].fileName);
-
+        for(x = 0; x < ongoingAssignments.length; x++ ) // 3. check op nieuwe opdracht
+       {
+           if(ongoingAssignments[x] == filesToExport[i].fileName)
+           {
+               ongoingAssignmentFlag = true;
+               break;
+           }
+       }
+        var tempString1 = "Opgave " +  assignmentCount;
+        var tempString2 = "Deel" + partCount;
        if(flag) // 4. zet nieuwe opdracht erin
        {
+            if(ongoingAssignmentFlag)
+            {
+               // console.log(filesToExport[i].fileName);
+                var tempString1 = "Opgave " +  assignmentCount;
+                partCount++;
+                var tempString2 = "Deel" + partCount;
+                jObjectOpgave[tempString1][tempString2] = "con" + filesToExport[i].fileName;
+            }
             partCount = 1;
             assignmentCount++;
-            var tempString1 = "Opgave " +  assignmentCount;
-            var tempString2 = "Deel" + partCount;
+            tempString1 = "Opgave " +  assignmentCount;
+            tempString2 = "Deel" + partCount;
             jObjectOpgave[tempString1] = {[tempString2]: "con" + filesToExport[i].fileName};
             if(twoAssignmentsOnSamePageflag)
             {
                 assignmentCount++;
-                var tempString1 = "Opgave " +  assignmentCount;
-                var tempString2 = "Deel" + partCount;
+                tempString1 = "Opgave " +  assignmentCount;
+                tempString2 = "Deel" + partCount;
                 jObjectOpgave[tempString1] = {[tempString2]: "con" + filesToExport[i].fileName};
             }
 
             partCount++;
        }
        else{ // 5. zet een nieuw deel erin
-            var tempString1 = "Opgave " +  assignmentCount;
-            var tempString2 = "Deel" + partCount;
             if(assignmentCount > 0)
             {
                 jObjectOpgave[tempString1][tempString2] = "con" + filesToExport[i].fileName;
@@ -351,6 +386,7 @@ for (i = 0; i < filesToExport.length; i++) {
        }
             flag = false;
             twoAssignmentsOnSamePageflag = false;
+            ongoingAssignmentFlag = false;
      }
      else if(parts[5] == "u")
      {
