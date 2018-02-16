@@ -25,27 +25,26 @@
     var assignmentsOnSamePage = [];
     var ongoingAssignments = [];
 
-function validate(oForm) {
+function validate(oForm) { // functie om files eruit te filteren die niet geconvert moeten worden
     var arrInputs = oForm.getElementsByTagName("input");
     var fileListToProceed = [];
     for (var i = 0; i < arrInputs.file.files.length; i++)
     {
         var filename = arrInputs.file.files[i].name;
-        if(filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2) == "html")
+        if(filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2) == "html") // Check of het bestand een html extensie heeft
         {
-            if((filename.match(/-/g) || []).length >= 6)
+            if((filename.match(/-/g) || []).length >= 6) // check of het bestand 6 of meer streepjes in bestands naam heeft
             {
                 var stringParts = filename.split("-");
                  stringParts[6] = stringParts[6].replace(".html", ""); 
-                if(!isNaN(stringParts[6]) && stringParts[6] != "1")
+                if(!isNaN(stringParts[6]) && stringParts[6] != "1")// extra check om te kijken of het een file is die we door de converter heen willen halen
                 {
                     fileListToProceed.push(arrInputs.file.files[i]);    
                 }
-                else if(stringParts[6].toLowerCase() == "a" || stringParts[6].toLowerCase() == "e")
+                else if(stringParts[6].toLowerCase() == "a" || stringParts[6].toLowerCase() == "e")// als het een A of E blad is dan moet ie er ook doorheen
                 {
                     if(typeof stringParts[7] != 'undefined')
                     {
-                        //arrInputs.file.files[i].name = stringParts[1]+"-"+stringParts[2]+"-"+stringParts[3]+"-"+stringParts[4]+"-"+stringParts[5]+stringParts[6].toLowerCase()+"-"+stringParts[7];
                         fileListToProceed.push(arrInputs.file.files[i]);
                     }
                 }
@@ -54,11 +53,11 @@ function validate(oForm) {
     }
     if(fileListToProceed.length > 0)
     {
-        replace(fileListToProceed);
+        replace(fileListToProceed); // Vanuit hier gaan we naar de eerste loop waar we alles in de html goed gaan zetten 
     }
 }
 
-function replace(arr)
+function replace(arr) // Hier gaan we alles in de html goed zetten.
 {
 
 const files = arr;
@@ -66,27 +65,26 @@ const files = arr;
     var count = 0;
     var fileValue;
     var assignmentCount = 1;
-  Object.keys(files).forEach(i => {
+  Object.keys(files).forEach(i => { // De main loop die de door de hele file list heen loopt
     const file = files[i];
     const reader = new FileReader();
-    reader.onload = (evt) => {
+    reader.onload = (evt) => { // wachten op totdat reader geladen is
         
     fileValue = evt.target.result;
                 var page = document.createElement('html');
-                var imgpath = getImgPath(file.name);
-                page.innerHTML = fileValue;
+                var imgpath = getImgPath(file.name); // Deze functie genereert een pad naar de achtergrond image
+                page.innerHTML = fileValue; // Hier convert ik de waarde die de reader teruggeeft van een file naar een html "object"
                  var stringParts = [];
-                stringParts = file.name.split("-");
-               // console.log(page.children[1].innerHTML);
+                stringParts = file.name.split("-"); 
             if(stringParts[6].toLowerCase() != "a" || stringParts[6].toLowerCase() != "e") 
             {
+                //in dit gedeelte word er een hoop in de html en css geroerd--------------------------
                 page.children[0].innerHTML += "<style> p{font-family: 'Arial'!important;} body{background:'white';background-image: url("+ imgpath +");background-position: -75px -50px ;background-repeat: no-repeat !important;}";
                 if(page.children[0].children[2].innerHTML.includes("matrix"))
                 {
                     page.children[0].innerHTML += "p{transition-property: none !important;transform: none !important;animation: none !important;}";
                 }
                 page.children[0].innerHTML += "</style>";
-                ///console.log(page.children[0].children[2].innerHTML);
                 page.children[1].removeAttribute("bgcolor");
                 page.children[1].setAttribute("style", "margin:-75px!important; margin-top:-50px!important;margin-bottom:0px!important;overflow-x:hidden!important");
                 page.children[1].setAttribute("vlink", "blue");
@@ -98,15 +96,14 @@ const files = arr;
                 }
                 page.children[1].children[0].setAttribute("style", "position:relative;width:892px;height:auto;");
                 page.children[1].children[0].children[0].remove();
-
-                             for (var i = 0; i < page.children[1].children[0].children.length; i++)
-                 {
+                //EINDE:in dit gedeelte word er een hoop in de html en css geroerd--------------------------
+                        for (var i = 0; i < page.children[1].children[0].children.length; i++) // Deze loop zoekt naar "►►►" en als die gevonden is verwijderd ie 5 elementen die ervoor staan.
+                        {
                             try{
                                 if(page.children[1].children[0].children[i].innerHTML.match("►►►"))
                                 {
                                     for (var x = i - 4; x <= i; x++)
                                         {
-                                            //console.log(file.name);
                                             try{
                                                 if(page.children[1].children[0].children[x].innerHTML.match("►►►"))
                                                 {
@@ -122,7 +119,7 @@ const files = arr;
                                                console.log(err.message + "    op   " + file.name + "   OP INDEX  " + x);
                                             }
                                         }
-                                        if(page.children[1].children[0].children[i].innerHTML == "&nbsp;")
+                                        if(page.children[1].children[0].children[i].innerHTML == "&nbsp;")//soms blijven er whitespaces staan. Die worden hier verwijderd.
                                         {
                                             if(page.children[1].children[0].children[i].nextElementSibling.innerHTML == "&nbsp;")
                                             {
@@ -138,8 +135,8 @@ const files = arr;
                             {
                                 console.log(err.message + "    op   " + file.name + "   OP INDEX  " + i);
                             }
-                 }
-                        try {
+                        }
+                        try {//In dit try catch block word de "let op tekst die soms aan het einde van een examenbundel staat verwijderd"
                             if(page.children[1].children[0].lastElementChild.textContent.includes("Let op:"))
                            {        
                                page.children[1].children[0].lastElementChild.remove();
@@ -153,30 +150,31 @@ const files = arr;
                             }
                         }
                         catch(err) {}
+
                 var pointsArray = [];
                 var assignMentCountForCorrectie = 0;
-                 for (var i = 0; i < page.children[1].children[0].children.length; i++)
+                 for (var i = 0; i < page.children[1].children[0].children.length; i++)// Hier gaan we door alle html elementen heen loopen uit de body
                  {
-
+                     // hier heb ik een nieuwe opgave gedetecteerd
                         if( page.children[1].children[0].children[i].style.left.includes("123px") ||  page.children[1].children[0].children[i].style.left.includes("119px"))
                         {
                             if(page.children[1].children[0].children[i].textContent.length > 2)
                             {
-                                 assignmentCount = 1;
+                                assignmentCount = 1;
                                 if(stringParts[5] == "c")
                                 {
+                                    //deze check is voor Correctieschrift. En ramt de body omhoog als er een nieuwe opdracht gevonden is
                                     if(page.children[1].children[0].children[i].innerHTML.includes("<b>") && !page.children[1].children[0].children[i].innerHTML.includes("Beoordelingsmodel") && !page.children[1].children[0].children[i].textContent.includes("maximumscore")&& !page.children[1].children[0].children[i].textContent.includes("Inzenden"))
                                     {
-                                        console.log(page.children[1].children[0].children[i].textContent);
-                                        //page.children[1].children[0].children[i].style.top
                                         var number = parseInt(page.children[1].children[0].children[i].style.top, 10);
                                         number += 50;
                                         var top = "-"+number+"px";
                                         page.children[1].setAttribute("style", "margin:-75!important; margin-top:"+top+"!important;margin-bottom:0px!important;overflow-x:hidden!important");
-                                        
+                                        //Hier word de image in ook omhoog gezet.
                                         page.children[0].innerHTML += "<style>body{background-position: -75px "+top+" !important;}</style>";
                                     }
                                 } 
+                                // bij een o en een b in de filenaam word de margin top aangepast naar -106px
                                 else if (stringParts[5] == "b" || stringParts[5] == "o")
                                 {
                                      page.children[1].setAttribute("style", "margin:-75!important; margin-top:-106px!important;margin-bottom:0px!important;overflow-x:hidden!important");
@@ -185,9 +183,9 @@ const files = arr;
                             }
                             else{
                                 var number = parseInt(page.children[1].children[0].children[i].textContent, 10);
-                                if(!isNaN(number)) // hier heb ik een pagina te pakken
+                                if(!isNaN(number)) // hier heb ik een opdracht van een opgave gedetecteerd
                                 {
-                                    page.children[1].children[0].children[i].innerHTML = "<b>" + assignmentCount + "</b>"
+                                    page.children[1].children[0].children[i].innerHTML = "<b>" + assignmentCount + "</b>" // opdracht cijfer in dikgedrukt zetten
                                     if(page.children[1].children[0].children[i].nextElementSibling.style.left == "136px")
                                     {
                                         page.children[1].children[0].children[i].nextElementSibling.style.left = "149px"
@@ -197,11 +195,13 @@ const files = arr;
                                 }
                             }                     
                         }
+                        // hier heb ik de punten gedetecteerd die voor een opdracht staat
                      if(page.children[1].children[0].children[i].style.left.includes("85px"))
                      {
                         page.children[1].children[0].children[i].style.left = "95px";
                         if(stringParts[5] == "o")
                         {
+                            //indien het een o bundel is dan pushen we de punten in een array om ze later in de JSON te zetten
                             var pointsString = page.children[1].children[0].children[i].textContent
                             
                             if(!isNaN(pointsString.substring(0,1)) && pointsString.substring(1,2) == "p")
@@ -210,14 +210,14 @@ const files = arr;
                                 pointsArray.push(pointsString);
                             }
                         }
-                     }   
+                     }
+                     // Deze check is om de bestandsnaam te verwijderen die soms aan het einde van een pagina staat.   
                     if(page.children[1].children[0].children[i].textContent.toLowerCase().match(file.name.toLowerCase().substring(0, file.name.toLowerCase().lastIndexOf("-"))))
                      {
                         page.children[1].children[0].children[i].remove();
                         i--;
                      }
-                    try{
-                        //console.log(page.children[1].children[0].children[i]);
+                    try{ // dit try catch block zijn een hoop checks om symbolen te vervangen(die niet geladen worden), en om "einde" te verwijderen die soms blijft staan aan het einde van een pagina
                         if(page.children[1].children[0].children[i].textContent == "einde" || page.children[1].children[0].children[i].innerHTML == "einde&nbsp;")
                         {
                             page.children[1].children[0].children[i].nextElementSibling.remove();
@@ -268,52 +268,46 @@ const files = arr;
                     catch(err)
                     {
                         console.log(err.message + "    op   " + file.name + "   OP INDEX  " + i);
-                    }
-                 }
+                    } //EINDE: dit try catch block zijn een hoop checks om symbolen te vervangen(die niet geladen worden), en om "einde" te verwijderen die soms blijft staan aan het einde van een pagina
+                 }//EINDE: // Hier gaan we door alle html elementen heen loopen uit de body
                 
             }
-                 // console.log(file.name);
+
+            //Hier maak ik een object van een file die ik in een array stop. Deze word later als ik door alle files ben geloopt doorgegeven aan de volgende functie
                var obj = new Object();
                obj.innerHTML = page.innerHTML;
                obj.fileName = file.name;
                obj.ImgPath = imgpath;
                var pointsObj = {};
-               for (i = 0; i < pointsArray.length; i++) 
+               for (i = 0; i < pointsArray.length; i++)//Hier worden die punten als een object toegevoegd 
                {
                     pointsObj[i+ 1] = pointsArray[i];
                }
                obj.assignmentCount = pointsObj;
                obj.assignmentCountForCorr = assignMentCountForCorrectie;
                filesToExport.push(obj);
-              count++;
+               //EINDE: Hier maak ik een object van een file die ik in een array stop. Deze word later als ik door alle files ben geloopt doorgegeven aan de volgende functie
+               count++;
               if(count == files.length)
               {
-                  //console.log(filesToExport);
-                downloadCurrentDocuments(filesToExport);
+                downloadCurrentDocuments(filesToExport);// Naar de volgende functie waar de JSON gegenereert word en de files gedownload zullen worden.
               }
     }
     reader.readAsText(file, "UTF-8");
 
   })
 
-
-//console.log(filesToExport);
-
-//                 $("#fileContents").load("assets/docs/" + file.name);
-// console.log("assets/docs/" + file.name);
- 
 }
-function getImgPath(imgPath)
+function getImgPath(imgPath)// deze functie genereert een pad naar de achtergrond image toe.
 {
  var numberExt
- var imgNumber = imgPath.substr(imgPath.lastIndexOf('-') + 1, imgPath.lastIndexOf('.')) //output == 2.html
+ var imgNumber = imgPath.substr(imgPath.lastIndexOf('-') + 1, imgPath.lastIndexOf('.')) 
  var stringParts = [];
  stringParts = imgPath.split("-");
-   //console.log(stringParts);
-   if(typeof stringParts[7] == 'undefined')
+   if(typeof stringParts[7] == 'undefined') // in dit geval heb ik een A of een E blad
    {
         stringParts[6] = stringParts[6].replace(".html", ""); 
-        var imgNumberINT = parseInt(stringParts[6]); //output == 2 (INT)
+        var imgNumberINT = parseInt(stringParts[6]);
         var temp = 0;
         if(imgNumberINT < 10)
         {
@@ -325,12 +319,12 @@ function getImgPath(imgPath)
             numberExt = stringParts[5] + "0" + stringParts[6];
             temp = 2;
         }
-        var toReplace = imgPath.substr(imgPath.indexOf(stringParts[5] + '-'), imgPath.lastIndexOf('.')); //output == o-2.html
+        var toReplace = imgPath.substr(imgPath.indexOf(stringParts[5] + '-'), imgPath.lastIndexOf('.'));
 
    }
-   else{
+   else{ //In dit geval heb ik GEEN A of een E blad
         stringParts[7] = stringParts[7].replace(".html", ""); 
-        var imgNumberINT = parseInt(stringParts[7]); //output == 2 (INT)
+        var imgNumberINT = parseInt(stringParts[7]);
         var temp = 0;
         if(imgNumberINT < 10)
         {
@@ -342,11 +336,12 @@ function getImgPath(imgPath)
             numberExt = stringParts[6] + "0" + stringParts[7];
             temp = 2;
         }
-        var toReplace = imgPath.substr(imgPath.indexOf(stringParts[6] + '-'), imgPath.lastIndexOf('.')); //output == o-2.html
+        var toReplace = imgPath.substr(imgPath.indexOf(stringParts[6] + '-'), imgPath.lastIndexOf('.'));
 
    }
         imgPath = imgPath.replace(toReplace, numberExt);
-        imgPath = "images/" + imgPath + ".png";
+        imgPath = "images/" + imgPath + ".png";// die folder van images zou je kunnen veranderen als je wilt 
+        // een voorbeeld van een pad: images/bb-0191-a-13-1-o018.png
 
         return imgPath;
 
@@ -355,7 +350,7 @@ function getImgPath(imgPath)
 function downloadCurrentDocuments(filesToExport) {
 var zip = new JSZip();
 var parts = [];
-var jsonJaar;// = "20" + parts[3] + "-" + parts[4];
+var jsonJaar;
 var oudVak = filesToExport[0].fileName.split("-");
 var objVak = {};
 var opgaves = {};
@@ -371,12 +366,11 @@ for (i = 0; i < filesToExport.length; i++) {
         filesToExport[i].fileName = "con" + filesToExport[i].fileName;
      }
      parts = filesToExport[i].fileName.split("-");
-    if(parts[1] + parts[2] + parts[3] + parts[4] != oudVak[1] + oudVak[2] + oudVak[3] + oudVak[4]) //2. check op een nieuwe examenbundel
+    if(parts[1] + parts[2] + parts[3] + parts[4] != oudVak[1] + oudVak[2] + oudVak[3] + oudVak[4]) //2. check op een nieuwe examenbundel, zo ja dan word ie in een array gestopt
         {
                     jsonJaar = "20" + oudVak[3] + "-" + oudVak[4]
                     var vakPlusNiveauCode = oudVak[0] + "-" + oudVak[1]
                     vakPlusNiveauCode = vakPlusNiveauCode.toLowerCase();
-                    //console.log(vakPlusNiveauCode +"-"+ jsonJaar +"-------"+ jObjectOpgave.Bijlage);
                     jObjectOpgave["Opgave"] = opgaves;
                     jObjectOpgave["Correctievoorschrift"] = corrSchrift;
                     if(vakPlusNiveauCode in objVak)
@@ -386,7 +380,6 @@ for (i = 0; i < filesToExport.length; i++) {
                     else{
                         objVak[vakPlusNiveauCode] = {[jsonJaar]: jObjectOpgave};
                     }
-                   // console.log(jObjectOpgave);
                     oudVak = parts;
                     console.log("NIEUWE BUNDEL");
                     jObjectOpgave = {};
@@ -396,9 +389,10 @@ for (i = 0; i < filesToExport.length; i++) {
                     jObjectOpgave.Uitwerkingsbijlage = false;
                     jObjectOpgave.Aanvullendecorrectievoorschrift = false;
                     jObjectOpgave.Eratumblad = false;
+                    //reset alles.
 
         }
-     if(parts[5] == "o") // 1. check op document type
+     if(parts[5] == "o") //hier word de opgaves in JSON gegenereert
      {
          if(parts[6].toLowerCase() != "e")
          {
@@ -409,7 +403,7 @@ for (i = 0; i < filesToExport.length; i++) {
          }
 
      }
-     else if (parts[5] == "c")
+     else if (parts[5] == "c")//hier word de Correctieschrift in JSON gegenereert
      {
          if(parts[6].toLowerCase() != "a")
          {
@@ -421,7 +415,7 @@ for (i = 0; i < filesToExport.length; i++) {
              jObjectOpgave.Aanvullendecorrectievoorschrift = true; 
          }
      }
-     else if(parts[5] == "u")
+     else if(parts[5] == "u")//hier word de uitwerkingsbijlage in JSON op true gezet
      {
         
          jsonJaar = "20" + parts[3] + "-" + parts[4]
@@ -439,7 +433,7 @@ for (i = 0; i < filesToExport.length; i++) {
             jObjectOpgave.Uitwerkingsbijlage = true; 
          }
      }
-     else if(parts[5] == "b")
+     else if(parts[5] == "b")//hier word de bijlage in JSON op true gezet
      {
          jsonJaar = "20" + parts[3] + "-" + parts[4]
          var vakPlusNiveauCode = parts[0] + "-" + parts[1]
@@ -457,18 +451,15 @@ for (i = 0; i < filesToExport.length; i++) {
             jObjectOpgave.Bijlage = true;
          }
      }
-        zip.file(filesToExport[i].fileName.toLowerCase(), filesToExport[i].innerHTML);
+        zip.file(filesToExport[i].fileName.toLowerCase(), filesToExport[i].innerHTML); // Hier word er een file klaar gemaakt om te zippen
     }
-                console.log(opgaves);
-
-                    if(objVak != {})
+                    if(objVak != {}) // na de loop nog de laatste bundel pushen 
                     {
                             var vakPlusNiveauCode = oudVak[0]+"-"+oudVak[1]
                             vakPlusNiveauCode = vakPlusNiveauCode.toLowerCase();
                             jObjectOpgave["Opgave"] = opgaves;
                             jObjectOpgave["Correctievoorschrift"] = corrSchrift;
                             jsonJaar = "20" + parts[3] + "-" + parts[4]
-                            //objVak.push({[vakPlusNiveauCode]: {[jsonJaar]: jObjectOpgave}});
                             if(vakPlusNiveauCode in objVak)
                             {
                                 objVak[vakPlusNiveauCode][jsonJaar] = jObjectOpgave;     
@@ -478,8 +469,7 @@ for (i = 0; i < filesToExport.length; i++) {
                             }
                     }
                     
-
-                console.log(JSON.stringify(objVak));
+            //Hier word de zip file gemaakt en word de actie tot opslaan aangeroepen
             zip.file("test.json", JSON.stringify(objVak));
             var img = zip.folder("images");
                 zip.generateAsync({type:"blob"})
