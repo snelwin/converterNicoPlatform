@@ -80,7 +80,7 @@ const files = arr;
                // console.log(page.children[1].innerHTML);
             if(stringParts[6].toLowerCase() != "a" || stringParts[6].toLowerCase() != "e") 
             {
-                page.children[0].innerHTML += "<style> p{font-family: 'Arial'!important;} body{background:'white';background-image: url("+ imgpath +");background-position: -75px -50px !important;background-repeat: no-repeat !important;}";
+                page.children[0].innerHTML += "<style> p{font-family: 'Arial'!important;} body{background:'white';background-image: url("+ imgpath +");background-position: -75px -50px ;background-repeat: no-repeat !important;}";
                 if(page.children[0].children[2].innerHTML.includes("matrix"))
                 {
                     page.children[0].innerHTML += "p{transition-property: none !important;transform: none !important;animation: none !important;}";
@@ -94,6 +94,7 @@ const files = arr;
                 if(stringParts[5] == "c")
                 {
                     page.children[1].setAttribute("style", "margin:-75!important; margin-top:-100px!important;margin-bottom:0px!important;overflow-x:hidden!important");
+                    page.children[0].innerHTML += "<style>body{background-position: -75px -100px !important;}</style>";
                 }
                 page.children[1].children[0].setAttribute("style", "position:relative;width:892px;height:auto;");
                 page.children[1].children[0].children[0].remove();
@@ -172,11 +173,14 @@ const files = arr;
                                         number += 50;
                                         var top = "-"+number+"px";
                                         page.children[1].setAttribute("style", "margin:-75!important; margin-top:"+top+"!important;margin-bottom:0px!important;overflow-x:hidden!important");
+                                        
+                                        page.children[0].innerHTML += "<style>body{background-position: -75px "+top+" !important;}</style>";
                                     }
                                 } 
                                 else if (stringParts[5] == "b" || stringParts[5] == "o")
                                 {
                                      page.children[1].setAttribute("style", "margin:-75!important; margin-top:-106px!important;margin-bottom:0px!important;overflow-x:hidden!important");
+                                     page.children[0].innerHTML += "<style>body{background-position: -75px -106px !important;}</style>";
                                 }
                             }
                             else{
@@ -266,6 +270,7 @@ const files = arr;
                         console.log(err.message + "    op   " + file.name + "   OP INDEX  " + i);
                     }
                  }
+                
             }
                  // console.log(file.name);
                var obj = new Object();
@@ -452,7 +457,7 @@ for (i = 0; i < filesToExport.length; i++) {
             jObjectOpgave.Bijlage = true;
          }
      }
-        zip.file(filesToExport[i].fileName, filesToExport[i].innerHTML);
+        zip.file(filesToExport[i].fileName.toLowerCase(), filesToExport[i].innerHTML);
     }
                 console.log(opgaves);
 
