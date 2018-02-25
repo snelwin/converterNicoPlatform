@@ -338,6 +338,7 @@ const files = arr;
                             {
                                     if(page.children[1].children[0].children[i].innerHTML.includes("<b>") && !page.children[1].children[0].children[i].innerHTML.includes("Beoordelingsmodel") && !page.children[1].children[0].children[i].textContent.includes("maximumscore")&& !page.children[1].children[0].children[i].textContent.includes("Inzenden") && i > 12)
                                     {
+                                        console.log(page.children[1].children[0].children[i].textContent +" ---- "+ file.name)
                                         newAssignments.push(i);
                                     }
                             }          
@@ -360,6 +361,7 @@ const files = arr;
                 }
                 catch(err){console.log(page2)}
             }
+            //console.log(newAssignmentOnPageArray);
             //Hier maak ik een object van een file die ik in een array stop. Deze word later als ik door alle files ben geloopt doorgegeven aan de volgende functie
                var obj = new Object();
                obj.innerHTML = page.innerHTML;
@@ -378,7 +380,7 @@ const files = arr;
                     file.name = file.name.replace(/\.[^/.]+$/, "")
                     obj = {};
                     obj.innerHTML = newAssignmentOnPageArray[0].innerHTML;
-                    obj.fileName = file.name.toLowerCase() + "_part1.html";
+                    obj.fileName = file.name.toLowerCase() + "_part2.html";
                     obj.ImgPath = imgpath;
                     var pointsObj = {};
                     for (i = 0; i < pointsArray.length; i++)//Hier worden die punten als een object toegevoegd 
@@ -389,6 +391,8 @@ const files = arr;
                     obj.assignmentCountForCorr = assignMentCountForCorrectie;
                     filesToExport.push(obj);
                 }
+                                newAssignmentOnPageArray = [];
+
                //EINDE: Hier maak ik een object van een file die ik in een array stop. Deze word later als ik door alle files ben geloopt doorgegeven aan de volgende functie
                count++;
               if(count == files.length)
