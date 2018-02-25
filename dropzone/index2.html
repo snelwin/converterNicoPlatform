@@ -36,7 +36,17 @@ function validate(oForm) { // functie om files eruit te filteren die niet geconv
                  stringParts[6] = stringParts[6].replace(".html", ""); 
                 if(!isNaN(stringParts[6]) && stringParts[6] != "1")// extra check om te kijken of het een file is die we door de converter heen willen halen
                 {
-                    fileListToProceed.push(arrInputs.file.files[i]);    
+                    if(stringParts[5]=="c")
+                    {
+                        if(stringParts[6] != "2"&&stringParts[6] != "3")
+                        {
+                            fileListToProceed.push(arrInputs.file.files[i]); 
+                        }
+                           
+                    }
+                    else{
+                        fileListToProceed.push(arrInputs.file.files[i]);
+                    }
                 }
                 else if(stringParts[6].toLowerCase() == "a" || stringParts[6].toLowerCase() == "e")// als het een A of E blad is dan moet ie er ook doorheen
                 {
@@ -129,6 +139,7 @@ const files = arr;
                                         }
                                     break;
                                 }
+
                             }
                             catch(err)
                             {
@@ -147,7 +158,14 @@ const files = arr;
                                page.children[1].children[0].lastElementChild.remove();
                                page.children[1].children[0].lastElementChild.remove();
                             }
-                        }
+                            if(page.children[1].children[0].lastElementChild.textContent.includes("VERGEET"))
+                           {
+                               page.children[1].children[0].lastElementChild.remove();
+                               page.children[1].children[0].lastElementChild.remove();
+                               page.children[1].children[0].lastElementChild.remove();
+                               page.children[1].children[0].lastElementChild.remove();
+                            }
+                        }                        
                         catch(err) {}
 
                 var pointsArray = [];
@@ -220,6 +238,15 @@ const files = arr;
                      catch(err){console.log(err.message);}
 
                      try{
+                                if(page.children[1].children[0].children[i].innerHTML.match("VERGEET"))
+                                {
+                                    page.children[1].children[0].children[i].remove();
+                                    page.children[1].children[0].children[i].remove();
+                                    page.children[1].children[0].children[i].remove();
+                                    page.children[1].children[0].children[i].remove();
+                                    page.children[1].children[0].children[i].remove();
+                                    page.children[1].children[0].children[i].remove();
+                                }
                         if(stringParts[5] == "c"&&page.children[1].children[0].children[i].style.left == "769px" && !isNaN(page.children[1].children[0].children[i].textContent))
                         {
                             page.children[1].children[0].children[i].style.left = "745px";
@@ -357,7 +384,13 @@ const files = arr;
                 number += 50;
                 var top2 = "-"+number+"px";   
                 page2.children[1].setAttribute("style", "margin:-75!important; margin-top:"+top2+"!important;margin-bottom:0px!important;overflow-x:hidden!important");
+                page2.children[0].innerHTML += "<style>body{background-position: -75px "+top2+"!important;}</style>";
                 newAssignmentOnPageArray.push(page2);
+                    for (var i = newAssignments[0]; i < page.children[1].children[0].children.length; i++) 
+                    {
+                        page.children[1].children[0].children[i].remove();
+                        i--;
+                    }
                 }
                 catch(err){console.log(page2)}
             }
@@ -392,7 +425,7 @@ const files = arr;
                     filesToExport.push(obj);
                 }
                                 newAssignmentOnPageArray = [];
-
+newAssignments = [];
                //EINDE: Hier maak ik een object van een file die ik in een array stop. Deze word later als ik door alle files ben geloopt doorgegeven aan de volgende functie
                count++;
               if(count == files.length)
