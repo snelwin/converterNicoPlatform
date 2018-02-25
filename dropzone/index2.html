@@ -59,11 +59,12 @@ function replace(arr) // Hier gaan we alles in de html goed zetten.
 
 const files = arr;
     var count = 0;
-    var newAssignments = [];
+
     var newAssignmentOnPageArray = [];
     var fileValue;
     var assignmentCount = 1;
   Object.keys(files).forEach(i => { // De main loop die de door de hele file list heen loopt
+      var newAssignments = [];
     const file = files[i];
     const reader = new FileReader();
     reader.onload = (evt) => { // wachten op totdat reader geladen is
@@ -348,14 +349,16 @@ const files = arr;
             }
             if(newAssignments > 0)
             {
-                
+                try{
                 var page2 = document.createElement('html');
                 page2.innerHTML = page.innerHTML;
-                var number = parseInt(page2.children[1].children[0].children[newAssignments[0]].style.top, 10);
+                var number = parseInt(page2.children[1].children[page2.children[1].children.length-1].children[newAssignments[0]].style.top, 10);
                 number += 50;
                 var top2 = "-"+number+"px";   
                 page2.children[1].setAttribute("style", "margin:-75!important; margin-top:"+top2+"!important;margin-bottom:0px!important;overflow-x:hidden!important");
                 newAssignmentOnPageArray.push(page2);
+                }
+                catch(err){console.log(page2)}
             }
             //Hier maak ik een object van een file die ik in een array stop. Deze word later als ik door alle files ben geloopt doorgegeven aan de volgende functie
                var obj = new Object();
@@ -380,7 +383,7 @@ const files = arr;
                     var pointsObj = {};
                     for (i = 0; i < pointsArray.length; i++)//Hier worden die punten als een object toegevoegd 
                     {
-                            pointsObj[i+ 1] = pointsArray[i];
+                        pointsObj[i+ 1] = pointsArray[i];
                     }
                     obj.assignmentCount = pointsObj;
                     obj.assignmentCountForCorr = assignMentCountForCorrectie;
